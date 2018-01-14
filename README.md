@@ -39,6 +39,8 @@ See the [setup instructions](docs/SETUP.md) for how to find the needed parameter
 
 See the [docs](docs/API.md).
 
+Added RGB Bulb functionality - [doc](docs/RGBBULB.md).
+
 **IMPORTANT**: Only one TCP connection can be in use with a device at once. If testing this, do not have the app on your phone open.
 
 ## TODO

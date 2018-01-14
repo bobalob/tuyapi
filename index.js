@@ -175,7 +175,9 @@ TuyaDevice.prototype.get = function (options) {
 * @param {Object} options - options for setting properties
 * @param {String} [options.id] - ID of device
 * @param {Boolean} options.set - `true` for on, `false` for off
-* @param {Number} [options.dps] - dps index to change
+* @param {String} options.set - for non-boolean dps values, works with rgbbulb to set 'white' or 'scene'
+* @param {Object} options.set - to allow setting of multiple dps values
+* @param {Number} [options.dps] - dps indexes to change
 * @example
 * // set default property on default device
 * tuya.set({set: true}).then(() => console.log('device was changed'))
@@ -218,10 +220,16 @@ TuyaDevice.prototype.set = function (options) {
     thisRequest.t = (parseInt(now.getTime() / 1000, 10)).toString();
   }
 
-  if (options.dps === undefined) {
-    thisRequest.dps = {1: options.set};
+  //Handle the different types of input
+  if (options.dps === undefined && (typeof options.set != "object")) {
+    thisRequest.dps = { 1: options.set };
   } else {
-    thisRequest.dps[options.dps.toString] = options.set;
+    thisRequest.dps = {};
+    thisRequest.dps[options.dps] = options.set;
+  }
+
+  if (typeof options.set === "object") {
+      thisRequest.dps = options.set;
   }
 
   // Encrypt data
@@ -302,10 +310,12 @@ TuyaDevice.prototype._constructBuffer = function (type, data, command) {
 * @returns {Object} extracted object
 */
 TuyaDevice.prototype._extractJSON = function (data) {
-  data = data.toString();
+    data = data.toString();
 
   // Find the # of occurrences of '{' and make that # match with the # of occurrences of '}'
-  const leftBrackets = stringOccurrence(data, '{');
+  var leftBrackets = stringOccurrence(data, '{');
+  var rightBrackets = stringOccurrence(data, '}');
+  if (leftBrackets > rightBrackets) { leftBrackets = rightBrackets }
   let occurrences = 0;
   let currentIndex = 0;
 
